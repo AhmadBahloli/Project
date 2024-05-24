@@ -1,0 +1,151 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ChatClient } from './chat-client';
+
+// WebSocket URL for connecting to the AWS WebSocket API endpoint
+const URL = 'wss://i0kpn8fw75.execute-api.me-south-1.amazonaws.com/production/';
+
+const App = () => {
+  // Ref to hold the WebSocket instance, ensuring it's maintained across renders
+  const socket = useRef<WebSocket | null>(null);
+
+  // State variables to manage component state
+  const [isConnected, setIsConnected] = useState(false); // Track WebSocket connection status
+  const [members, setMembers] = useState([]); // List of chat members
+  const [chatRows, setChatRows] = useState<React.ReactNode[]>([]); // Chat messages to display
+  const [message, setMessage] = useState(''); // Current message input
+  const [name, setName] = useState(''); // User's name
+  const [showNameInput, setShowNameInput] = useState(false); // Toggle name input visibility
+  const [loading, setLoading] = useState(false); // Loading state for connection
+  const [darkMode, setDarkMode] = useState(false); // Toggle dark mode
+
+  // Callback function for handling WebSocket connection open event
+  const onSocketOpen = useCallback(() => {
+    setShowNameInput(true); // Show the name input field when the socket is open
+  }, []);
+
+  // Callback function for handling WebSocket connection close event
+  const onSocketClose = useCallback(() => {
+    setMembers([]); // Clear the members list
+    setIsConnected(false); // Set connection status to false
+    setChatRows([]); // Clear chat messages
+    setTimeout(() => setLoading(false), 3000); // Stop loading animation 3 seconds after disconnect
+  }, []);
+
+  // Callback function for handling WebSocket messages
+  const onSocketMessage = useCallback((dataStr) => {
+    const data = JSON.parse(dataStr); // Parse incoming JSON data
+    if (data.members) {
+      setMembers(data.members); // Update members list if received
+    } else if (data.publicMessage) {
+      // Append public message to chatRows
+      setChatRows(oldArray => [...oldArray, <span><b>{data.publicMessage}</b></span>]);
+    } else if (data.privateMessage) {
+      // Show private message as an alert
+      alert(data.privateMessage);
+    } else if (data.systemMessage) {
+      // Append system message to chatRows
+      setChatRows(oldArray => [...oldArray, <span><i>{data.systemMessage}</i></span>]);
+    }
+  }, []);
+
+  // Function to establish WebSocket connection
+  const onConnect = useCallback(() => {
+    if (socket.current?.readyState !== WebSocket.OPEN) {
+      socket.current = new WebSocket(URL); // Create new WebSocket instance
+      socket.current.addEventListener('open', onSocketOpen); // Attach open event listener
+      socket.current.addEventListener('close', onSocketClose); // Attach close event listener
+      socket.current.addEventListener('message', (event) => {
+        onSocketMessage(event.data); // Attach message event listener
+      });
+    }
+  }, [onSocketOpen, onSocketClose, onSocketMessage]);
+
+  // Clean up WebSocket connection on component unmount
+  useEffect(() => {
+    return () => {
+      socket.current?.close(); // Close WebSocket connection
+    };
+  }, []);
+
+  // Function to send a private message to a specific member
+  const onSendPrivateMessage = useCallback((to: string) => {
+    const message = prompt('Enter private message for ' + to); // Prompt user for private message
+    if (message) {
+      socket.current?.send(JSON.stringify({
+        action: 'sendPrivate', // Specify action type
+        message, // Message content
+        to, // Recipient
+      }));
+    }
+  }, []);
+
+  // Function to send a public message to all members
+  const onSendPublicMessage = useCallback(() => {
+    if (message.trim()) {
+      socket.current?.send(JSON.stringify({
+        action: 'sendPublic', // Specify action type
+        message, // Message content
+      }));
+      setMessage(''); // Clear message input
+    }
+  }, [message]);
+
+  // Function to disconnect from WebSocket
+  const onDisconnect = useCallback(() => {
+    if (isConnected) {
+      socket.current?.close(); // Close WebSocket connection
+      setLoading(true); // Set loading state
+    }
+  }, [isConnected]);
+
+  // Handler for submitting the user's name
+  const handleNameSubmit = () => {
+    if (name.trim()) {
+      socket.current?.send(JSON.stringify({ action: 'setName', name })); // Send name to server
+      setIsConnected(true); // Set connection status to true
+      setShowNameInput(false); // Hide name input field
+    }
+  };
+
+  // Handler for message input change event
+  const handleMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(event.target.value); // Update message state
+  };
+
+  // Handler for key press event on message input
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      onSendPublicMessage(); // Send public message on Enter key press
+    }
+  };
+
+  // Function to toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode); // Toggle dark mode state
+  };
+
+  // Render the ChatClient component with all necessary props
+  return (
+    <ChatClient
+      isConnected={isConnected} // Pass connection status
+      members={members} // Pass members list
+      chatRows={chatRows} // Pass chat messages
+      message={message} // Pass current message input
+      onMessageChange={handleMessageChange} // Pass message change handler
+      onMessageKeyPress={handleKeyPress} // Pass key press handler
+      onPublicMessage={onSendPublicMessage} // Pass public message handler
+      onPrivateMessage={onSendPrivateMessage} // Pass private message handler
+      onConnect={onConnect} // Pass connect handler
+      onDisconnect={onDisconnect} // Pass disconnect handler
+      showNameInput={showNameInput} // Pass name input visibility state
+      name={name} // Pass user's name
+      onNameChange={(e) => setName(e.target.value)} // Pass name change handler
+      onNameSubmit={handleNameSubmit} // Pass name submit handler
+      loading={loading} // Pass loading state
+      darkMode={darkMode} // Pass dark mode state
+      toggleDarkMode={toggleDarkMode} // Pass dark mode toggle handler
+    />
+  );
+};
+
+export default App;
