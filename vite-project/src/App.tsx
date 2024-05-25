@@ -10,6 +10,8 @@ import {
   makeStyles,
   createStyles,
   Theme,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 
 const URL = "wss://i0kpn8fw75.execute-api.me-south-1.amazonaws.com/production/";
@@ -65,6 +67,8 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const App = () => {
   const classes = useStyles();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const socket = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [members, setMembers] = useState([]);
@@ -179,13 +183,13 @@ const App = () => {
   const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(event.target.value);
   };
-  
+
   const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter") {
       onSendPublicMessage();
     }
   };
-  
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
@@ -210,11 +214,13 @@ const App = () => {
         loading={loading}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
+        isMobile={isMobile}
       />
       <Dialog
         open={privateMessageModalOpen}
         onClose={() => setPrivateMessageModalOpen(false)}
         className={classes.dialog}
+        fullScreen={isMobile}
       >
         <DialogTitle className={classes.dialogTitle}>
           Send Private Message to {privateMessageRecipient}

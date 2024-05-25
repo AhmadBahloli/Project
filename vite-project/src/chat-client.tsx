@@ -15,12 +15,15 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { Brightness4, Brightness7 } from "@material-ui/icons";
 
 interface ThemeProps {
   darkMode: boolean;
+  isMobile: boolean;
 }
 
 const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
@@ -42,6 +45,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       backgroundColor: (props) => (props.darkMode ? "#2c2c2c" : "#ffffff"),
       padding: theme.spacing(3),
       transition: "background-color 0.5s ease, color 0.5s ease",
+      width: (props) => (props.isMobile ? "100%" : "80%"),
     },
     sidebar: {
       backgroundColor: (props) => (props.darkMode ? "#3c3c3c" : "#a1c4fd"),
@@ -50,6 +54,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       boxShadow: theme.shadows[3],
       padding: theme.spacing(2),
       transition: "background-color 0.5s ease",
+      display: (props) => (props.isMobile ? "none" : "block"),
     },
     chatArea: {
       position: "relative",
@@ -200,7 +205,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       top: "50%",
       left: "50%",
       transform: "translate(-50%, -50%)",
-      width: "400px",
+      width: (props) => (props.isMobile ? "80%" : "400px"),
       height: "450px",
       textAlign: "center",
     },
@@ -277,6 +282,7 @@ interface Props {
   loading: boolean;
   darkMode: boolean;
   toggleDarkMode: () => void;
+  isMobile: boolean;
 }
 
 export const ChatClient: React.FC<Props> = (props) => {
@@ -310,7 +316,7 @@ export const ChatClient: React.FC<Props> = (props) => {
       <CssBaseline />
       <Container maxWidth="lg" className={classes.container}>
         <Grid container style={{ height: "100%" }}>
-          <Grid item xs={2} className={classes.sidebar}>
+          <Grid item xs={12} sm={3} className={classes.sidebar}>
             <Typography variant="h6" gutterBottom>
               Members
             </Typography>
@@ -326,7 +332,7 @@ export const ChatClient: React.FC<Props> = (props) => {
               ))}
             </List>
           </Grid>
-          <Grid item container direction="column" xs={10}>
+          <Grid item container direction="column" xs={12} sm={9}>
             <Paper className={classes.chatArea}>
               <Grid container direction="column" style={{ height: "100%" }}>
                 <Grid item style={{ flex: 1, overflowY: "auto" }}>
