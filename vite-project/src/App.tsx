@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChatClient } from "./chat-client";
+import ChatClient from "./chat-client";
 import {
   Dialog,
   DialogTitle,
@@ -144,15 +144,17 @@ const App = () => {
   }, []);
 
   const handleSendPrivateMessage = () => {
-    socket.current?.send(
-      JSON.stringify({
-        action: "sendPrivate",
-        message: privateMessage,
-        to: privateMessageRecipient,
-      })
-    );
-    setPrivateMessage("");
-    setPrivateMessageModalOpen(false);
+    if (privateMessage.trim()) {
+      socket.current?.send(
+        JSON.stringify({
+          action: "sendPrivate",
+          message: privateMessage,
+          to: privateMessageRecipient,
+        })
+      );
+      setPrivateMessage("");
+      setPrivateMessageModalOpen(false);
+    }
   };
 
   const onSendPublicMessage = useCallback(() => {
@@ -166,7 +168,7 @@ const App = () => {
       setMessage("");
     }
   }, [message]);
-  
+
   const onDisconnect = useCallback(() => {
     if (isConnected) {
       socket.current?.close();

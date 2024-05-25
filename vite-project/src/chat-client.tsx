@@ -155,6 +155,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       backgroundColor: "#ffffff",
       fontSize: "0.875rem",
       transition: "background-color 0.5s ease, border-color 0.5s ease",
+      resize: "none",
     },
     messageButton: {
       padding: "0.5rem",
@@ -210,7 +211,9 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       textAlign: "center",
     },
     nameInputField: {
-      marginBottom: theme.spacing(2),
+      marginBottom: theme.spacing(1),
+      marginTop: theme.spacing(3),
+      width: "80%",
     },
     darkModeButton: {
       position: "absolute",
@@ -241,10 +244,10 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
     },
     appleButton: {
       margin: theme.spacing(1),
-      backgroundColor: "#282C33",
+      backgroundColor: "#3D3D3D",
       color: "white",
       "&:hover": {
-        backgroundColor: "grey",
+        backgroundColor: "#262626",
       },
       width: "80%",
       textTransform: "none",
@@ -285,7 +288,7 @@ interface Props {
   isMobile: boolean;
 }
 
-export const ChatClient: React.FC<Props> = (props) => {
+const ChatClient: React.FC<Props> = (props) => {
   const classes = useStyles(props);
   const [privateMessageAnchorEl, setPrivateMessageAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -485,6 +488,7 @@ export const ChatClient: React.FC<Props> = (props) => {
             placeholder="Your name"
             variant="outlined"
             size="small"
+            inputProps={{ style: { textAlign: 'center' } }}
           />
           <Button
             className={classes.googleButton}
@@ -545,3 +549,5 @@ export const ChatClient: React.FC<Props> = (props) => {
     </div>
   );
 };
+
+export default ChatClient;
