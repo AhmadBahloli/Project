@@ -166,7 +166,6 @@ const App = () => {
 
   const onSendPublicMessage = useCallback(() => {
     if (message.trim()) {
-      console.log("Sending message:", message);  // Log for debugging
       socket.current?.send(
         JSON.stringify({
           action: "sendPublic",
@@ -211,7 +210,6 @@ const App = () => {
     const reader = new FileReader();
     reader.onload = () => {
       if (socket.current?.readyState === WebSocket.OPEN) {
-        console.log("Sending file:", file.name);  // Log for debugging
         const base64Data = reader.result?.toString().split(',')[1]; // Extract Base64 string
         socket.current.send(
           JSON.stringify({
