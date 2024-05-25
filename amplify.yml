@@ -1,0 +1,17 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd Project/vite-project
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: Project/vite-project/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - Project/vite-project/node_modules/**/*
