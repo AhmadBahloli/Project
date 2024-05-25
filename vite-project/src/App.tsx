@@ -176,16 +176,16 @@ const App = () => {
     }
   };
 
-  const handleMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(event.target.value);
   };
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter") {
       onSendPublicMessage();
     }
   };
-
+  
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };

@@ -264,8 +264,8 @@ interface Props {
   members: string[];
   chatRows: React.ReactNode[];
   message: string;
-  onMessageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onMessageKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onMessageKeyPress: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onPublicMessage: () => void;
   onPrivateMessage: (to: string) => void;
   onConnect: () => void;
@@ -370,7 +370,7 @@ export const ChatClient: React.FC<Props> = (props) => {
                       </button>
                       <textarea
                         id="chat"
-                        rows="1"
+                        rows={1}
                         className={classes.messageInput}
                         value={props.message}
                         onChange={props.onMessageChange}
