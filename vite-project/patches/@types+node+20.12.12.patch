@@ -1,0 +1,15 @@
+diff --git a/node_modules/@types/node/events.d.ts b/node_modules/@types/node/events.d.ts
+index 62d6e7e..f7b19b1 100644
+--- a/node_modules/@types/node/events.d.ts
++++ b/node_modules/@types/node/events.d.ts
+@@ -89,8 +89,8 @@ declare module "events" {
+     type Key2<K, T> = T extends DefaultEventMap ? string | symbol : K & keyof T;
+     type Listener<K, T, F> = T extends DefaultEventMap ? F : (
+         K extends keyof T ? (
+-                T[K] extends unknown[] ? (...args: T[K]) => void : never
+-            )
++            T[K] extends unknown[] ? (...args: T[K]) => void : never
++        )
+             : never
+     );
+     type Listener1<K, T> = Listener<K, T, (...args: any[]) => void>;
