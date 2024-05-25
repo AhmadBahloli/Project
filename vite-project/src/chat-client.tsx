@@ -155,7 +155,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       backgroundColor: "#ffffff",
       fontSize: "0.875rem",
       transition: "background-color 0.5s ease, border-color 0.5s ease",
-      resize: "none",
+      resize: "none",  // Prevent resizing
     },
     messageButton: {
       padding: "0.5rem",
@@ -211,8 +211,8 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       textAlign: "center",
     },
     nameInputField: {
-      marginBottom: theme.spacing(1),
-      marginTop: theme.spacing(3),
+      marginBottom: theme.spacing(2),
+      marginTop: theme.spacing(1),
       width: "80%",
     },
     darkModeButton: {
@@ -244,10 +244,10 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
     },
     appleButton: {
       margin: theme.spacing(1),
-      backgroundColor: "#3D3D3D",
+      backgroundColor: "black",
       color: "white",
       "&:hover": {
-        backgroundColor: "#262626",
+        backgroundColor: "#333333",
       },
       width: "80%",
       textTransform: "none",
@@ -286,12 +286,14 @@ interface Props {
   darkMode: boolean;
   toggleDarkMode: () => void;
   isMobile: boolean;
+  onSendFile: (file: File) => void; // Add the onSendFile property
 }
 
 const ChatClient: React.FC<Props> = (props) => {
   const classes = useStyles(props);
   const [privateMessageAnchorEl, setPrivateMessageAnchorEl] =
     useState<null | HTMLElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleConnect = () => {
     props.onConnect();
@@ -311,6 +313,20 @@ const ChatClient: React.FC<Props> = (props) => {
     setPrivateMessageAnchorEl(null);
     if (member) {
       props.onPrivateMessage(member);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+      props.onSendFile(event.target.files[0]);  // Send file immediately after selection
+    }
+  };
+
+  const handleSendFile = () => {
+    if (selectedFile) {
+      props.onSendFile(selectedFile);
+      setSelectedFile(null);
     }
   };
 
@@ -361,22 +377,33 @@ const ChatClient: React.FC<Props> = (props) => {
                         props.onPublicMessage();
                       }}
                     >
-                      <button type="button" className={classes.mediaButton}>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6"
+                      <input
+                        type="file"
+                        style={{ display: "none" }}
+                        id="file-input"
+                        onChange={handleFileChange}
+                      />
+                      <label htmlFor="file-input">
+                        <IconButton
+                          component="span"
+                          className={classes.mediaButton}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                            />
+                          </svg>
+                        </IconButton>
+                      </label>
                       <textarea
                         id="chat"
                         rows={1}

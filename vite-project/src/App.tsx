@@ -118,6 +118,13 @@ const App = () => {
           <i>{data.systemMessage}</i>
         </span>,
       ]);
+    } else if (data.media) {
+      setChatRows((oldArray) => [
+        ...oldArray,
+        <span>
+          <img src={data.media} alt={data.fileName} style={{ maxWidth: "100%" }} />
+        </span>,
+      ]);
     }
   }, []);
 
@@ -159,6 +166,7 @@ const App = () => {
 
   const onSendPublicMessage = useCallback(() => {
     if (message.trim()) {
+      console.log("Sending message:", message);  // Log for debugging
       socket.current?.send(
         JSON.stringify({
           action: "sendPublic",
@@ -190,12 +198,31 @@ const App = () => {
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter") {
+      event.preventDefault(); // Prevent form submission
       onSendPublicMessage();
     }
   };
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  const handleSendFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (socket.current?.readyState === WebSocket.OPEN) {
+        console.log("Sending file:", file.name);  // Log for debugging
+        const base64Data = reader.result?.toString().split(',')[1]; // Extract Base64 string
+        socket.current.send(
+          JSON.stringify({
+            action: "sendMedia",
+            data: base64Data,
+            fileName: file.name,
+          })
+        );
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -219,6 +246,7 @@ const App = () => {
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
         isMobile={isMobile}
+        onSendFile={handleSendFile}
       />
       <Dialog
         open={privateMessageModalOpen}
