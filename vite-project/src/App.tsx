@@ -156,15 +156,17 @@ const App = () => {
   };
 
   const onSendPublicMessage = useCallback(() => {
-    socket.current?.send(
-      JSON.stringify({
-        action: "sendPublic",
-        message,
-      })
-    );
-    setMessage("");
+    if (message.trim()) {
+      socket.current?.send(
+        JSON.stringify({
+          action: "sendPublic",
+          message,
+        })
+      );
+      setMessage("");
+    }
   }, [message]);
-
+  
   const onDisconnect = useCallback(() => {
     if (isConnected) {
       socket.current?.close();
