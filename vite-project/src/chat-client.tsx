@@ -353,7 +353,7 @@ const ChatClient: React.FC<Props> = (props) => {
           </Grid>
           <Grid item container direction="column" xs={12} sm={9}>
             <Paper className={classes.chatArea}>
-              <Grid container direction="column" style={{ height: "100%" }}>
+              <Grid container direction="column" style={{ height: "750px" }}>
                 <Grid item style={{ flex: 1, overflowY: "auto" }}>
                   <ul className={classes.list}>
                     {props.chatRows.map((item, i) => (
