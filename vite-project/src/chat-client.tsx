@@ -155,7 +155,7 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       backgroundColor: "#ffffff",
       fontSize: "0.875rem",
       transition: "background-color 0.5s ease, border-color 0.5s ease",
-      resize: "none",  // Prevent resizing
+      resize: "none", // Prevent resizing
     },
     messageButton: {
       padding: "0.5rem",
@@ -319,7 +319,7 @@ const ChatClient: React.FC<Props> = (props) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0]);
-      props.onSendFile(event.target.files[0]);  // Send file immediately after selection
+      props.onSendFile(event.target.files[0]); // Send file immediately after selection
     }
   };
 
@@ -353,7 +353,7 @@ const ChatClient: React.FC<Props> = (props) => {
           </Grid>
           <Grid item container direction="column" xs={12} sm={9}>
             <Paper className={classes.chatArea}>
-              <Grid container direction="column" style={{ height: "750px" }}>
+              <Grid container direction="column" style={{ height: "750px" }}> 
                 <Grid item style={{ flex: 1, overflowY: "auto" }}>
                   <ul className={classes.list}>
                     {props.chatRows.map((item, i) => (
@@ -515,7 +515,7 @@ const ChatClient: React.FC<Props> = (props) => {
             placeholder="Your name"
             variant="outlined"
             size="small"
-            inputProps={{ style: { textAlign: 'center' } }}
+            inputProps={{ style: { textAlign: "center" } }}
           />
           <Button
             className={classes.googleButton}

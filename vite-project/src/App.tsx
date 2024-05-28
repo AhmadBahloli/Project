@@ -90,40 +90,30 @@ const App = () => {
     setMembers([]);
     setIsConnected(false);
     setChatRows([]);
-    setTimeout(() => setLoading(false), 3000); // Stop loading animation 3 seconds after disconnect
+    setTimeout(() => setLoading(false), 1500); // Stop loading animation 1.5 seconds after disconnect
   }, []);
 
   const onSocketMessage = useCallback((dataStr) => {
     const data = JSON.parse(dataStr);
+    const timestamp = new Date().toLocaleTimeString();
+  
     if (data.members) {
       setMembers(data.members);
-    } else if (data.publicMessage) {
+    } else if (data.publicMessage || data.privateMessage || data.systemMessage || data.media) {
+      const message = data.publicMessage || data.privateMessage || data.systemMessage || (
+        <img src={data.media} alt={data.fileName} style={{ maxWidth: "100%" }} />
+      );
+  
       setChatRows((oldArray) => [
         ...oldArray,
-        <span>
-          <b>{data.publicMessage}</b>
-        </span>,
-      ]);
-    } else if (data.privateMessage) {
-      setChatRows((oldArray) => [
-        ...oldArray,
-        <span>
-          <b>{data.privateMessage}</b>
-        </span>,
-      ]);
-    } else if (data.systemMessage) {
-      setChatRows((oldArray) => [
-        ...oldArray,
-        <span>
-          <i>{data.systemMessage}</i>
-        </span>,
-      ]);
-    } else if (data.media) {
-      setChatRows((oldArray) => [
-        ...oldArray,
-        <span>
-          <img src={data.media} alt={data.fileName} style={{ maxWidth: "100%" }} />
-        </span>,
+        <div style={{ position: 'relative', padding: '10px', boxSizing: 'border-box' }}>
+          <span>
+            <b>{message}</b>
+          </span>
+          <span style={{ position: 'absolute', bottom: '0', right: '0', fontSize: '0.8em', color: '#888' }}>
+            {timestamp}
+          </span>
+        </div>,
       ]);
     }
   }, []);
