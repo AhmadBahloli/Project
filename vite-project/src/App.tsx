@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import ChatClient from "./chat-client";
+import ChatClient from "./chat-client"; // Import the ChatClient component for rendering the chat interface
 import {
   Dialog,
   DialogTitle,
@@ -14,8 +14,10 @@ import {
   useTheme,
 } from "@material-ui/core";
 
+// WebSocket API Gateway URL (replace with your actual endpoint)
 const URL = "wss://i0kpn8fw75.execute-api.me-south-1.amazonaws.com/production/";
 
+// Material-UI styles for custom component appearance
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     dialog: {
@@ -66,51 +68,84 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const App = () => {
+  // Get the styled classes from useStyles and the current theme
   const classes = useStyles();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const socket = useRef<WebSocket | null>(null);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Check if the screen size is small (mobile)
+  const socket = useRef<WebSocket | null>(null); // WebSocket connection (using a ref to preserve the connection across renders)
+
+  // State variables for managing the application
   const [isConnected, setIsConnected] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [chatRows, setChatRows] = useState<React.ReactNode[]>([]);
-  const [message, setMessage] = useState("");
-  const [name, setName] = useState("");
+  const [members, setMembers] = useState([]); // List of chat members
+  const [chatRows, setChatRows] = useState<React.ReactNode[]>([]); // Chat messages
+  const [message, setMessage] = useState(""); // Current message input
+  const [name, setName] = useState(""); // User's name
   const [showNameInput, setShowNameInput] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [privateMessageModalOpen, setPrivateMessageModalOpen] = useState(false);
-  const [privateMessageRecipient, setPrivateMessageRecipient] = useState("");
-  const [privateMessage, setPrivateMessage] = useState("");
+  const [darkMode, setDarkMode] = useState(false); // Dark mode toggle
+  const [privateMessageModalOpen, setPrivateMessageModalOpen] = useState(false); // Private message dialog state
+  const [privateMessageRecipient, setPrivateMessageRecipient] = useState(""); // Recipient of private message
+  const [privateMessage, setPrivateMessage] = useState(""); // Private message content
 
+  // Callback for when the WebSocket connection opens
   const onSocketOpen = useCallback(() => {
-    setShowNameInput(true);
+    setShowNameInput(true); // Show the name input dialog
   }, []);
 
+  // Callback for when the WebSocket connection closes
   const onSocketClose = useCallback(() => {
-    setMembers([]);
-    setIsConnected(false);
-    setChatRows([]);
-    setTimeout(() => setLoading(false), 1500); // Stop loading animation 1.5 seconds after disconnect
+    setMembers([]); // Clear the member list
+    setIsConnected(false); // Update connection status
+    setChatRows([]); // Clear chat messages
+    setTimeout(() => setLoading(false), 1500); // Stop loading animation after 1.5 seconds
   }, []);
 
+  // Callback for handling incoming WebSocket messages
   const onSocketMessage = useCallback((dataStr) => {
     const data = JSON.parse(dataStr);
-    const timestamp = new Date().toLocaleTimeString();
-  
+    const timestamp = new Date().toLocaleTimeString(); // Get current time for message display
+
+    // Handle different types of incoming messages
     if (data.members) {
-      setMembers(data.members);
-    } else if (data.publicMessage || data.privateMessage || data.systemMessage || data.media) {
-      const message = data.publicMessage || data.privateMessage || data.systemMessage || (
-        <img src={data.media} alt={data.fileName} style={{ maxWidth: "100%" }} />
-      );
-  
+      setMembers(data.members); // Update the member list
+    } else if (
+      data.publicMessage ||
+      data.privateMessage ||
+      data.systemMessage ||
+      data.media
+    ) {
+      // (Handle public, private, system, and media messages)
+      const message = data.publicMessage ||
+        data.privateMessage ||
+        data.systemMessage || (
+          <img
+            src={data.media}
+            alt={data.fileName}
+            style={{ maxWidth: "100%" }}
+          />
+        );
+
       setChatRows((oldArray) => [
         ...oldArray,
-        <div style={{ position: 'relative', padding: '10px', boxSizing: 'border-box' }}>
+        <div
+          style={{
+            position: "relative",
+            padding: "10px",
+            boxSizing: "border-box",
+          }}
+        >
           <span>
             <b>{message}</b>
           </span>
-          <span style={{ position: 'absolute', bottom: '0', right: '0', fontSize: '0.8em', color: '#888' }}>
+          <span
+            style={{
+              position: "absolute",
+              bottom: "0",
+              right: "0",
+              fontSize: "0.8em",
+              color: "#888",
+            }}
+          >
             {timestamp}
           </span>
         </div>,
@@ -118,30 +153,40 @@ const App = () => {
     }
   }, []);
 
+  // Callback to establish a WebSocket connection
   const onConnect = useCallback(() => {
+    // Check if a connection already exists and is open
     if (socket.current?.readyState !== WebSocket.OPEN) {
+      // Create a new WebSocket instance with the specified URL
       socket.current = new WebSocket(URL);
-      socket.current.addEventListener("open", onSocketOpen);
-      socket.current.addEventListener("close", onSocketClose);
+      // Add event listeners to handle different WebSocket events
+      socket.current.addEventListener("open", onSocketOpen); // Handle connection opening
+      socket.current.addEventListener("close", onSocketClose); // Handle connection closing
       socket.current.addEventListener("message", (event) => {
+        // Handle incoming messages
         onSocketMessage(event.data);
       });
     }
   }, [onSocketOpen, onSocketClose, onSocketMessage]);
 
+  // Cleanup effect to close the WebSocket connection when the component unmounts
   useEffect(() => {
     return () => {
       socket.current?.close();
     };
   }, []);
 
+  // Callback for sending a private message to a specific user
   const onSendPrivateMessage = useCallback((to: string) => {
     setPrivateMessageRecipient(to);
     setPrivateMessageModalOpen(true);
   }, []);
 
+  // Function to handle sending the private message when the user clicks "Send"
   const handleSendPrivateMessage = () => {
+    // Check if the message is not empty
     if (privateMessage.trim()) {
+      // Send the private message through the WebSocket connection
       socket.current?.send(
         JSON.stringify({
           action: "sendPrivate",
@@ -149,30 +194,36 @@ const App = () => {
           to: privateMessageRecipient,
         })
       );
-      setPrivateMessage("");
-      setPrivateMessageModalOpen(false);
+      setPrivateMessage(""); // Clear the private message input
+      setPrivateMessageModalOpen(false); // Close the private message dialog
     }
   };
 
+  // Callback for sending a public message to all users in the chat
   const onSendPublicMessage = useCallback(() => {
+    // Check if the message is not empty
     if (message.trim()) {
+      // Send the public message through the WebSocket connection
       socket.current?.send(
         JSON.stringify({
           action: "sendPublic",
           message,
         })
       );
-      setMessage("");
+      setMessage(""); // Clear the public message input
     }
   }, [message]);
 
+  // Callback for disconnecting from the WebSocket
   const onDisconnect = useCallback(() => {
     if (isConnected) {
-      socket.current?.close();
-      setLoading(true);
+      // Check if connected
+      socket.current?.close(); // Close the WebSocket connection
+      setLoading(true); // Show loading animation
     }
   }, [isConnected]);
 
+  // ... (Other functions for handling name input, file uploads, dark mode toggle, etc.)
   const handleNameSubmit = () => {
     if (name.trim()) {
       socket.current?.send(JSON.stringify({ action: "setName", name }));
@@ -181,7 +232,9 @@ const App = () => {
     }
   };
 
-  const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setMessage(event.target.value);
   };
 
@@ -200,7 +253,7 @@ const App = () => {
     const reader = new FileReader();
     reader.onload = () => {
       if (socket.current?.readyState === WebSocket.OPEN) {
-        const base64Data = reader.result?.toString().split(',')[1]; // Extract Base64 string
+        const base64Data = reader.result?.toString().split(",")[1]; // Extract Base64 string
         socket.current.send(
           JSON.stringify({
             action: "sendMedia",
@@ -212,9 +265,10 @@ const App = () => {
     };
     reader.readAsDataURL(file);
   };
-
+  // JSX for rendering the chat interface
   return (
     <div>
+      {/* Render the ChatClient component and pass props */}
       <ChatClient
         isConnected={isConnected}
         members={members}
@@ -236,6 +290,8 @@ const App = () => {
         isMobile={isMobile}
         onSendFile={handleSendFile}
       />
+
+      {/* Dialog for sending private messages */}
       <Dialog
         open={privateMessageModalOpen}
         onClose={() => setPrivateMessageModalOpen(false)}

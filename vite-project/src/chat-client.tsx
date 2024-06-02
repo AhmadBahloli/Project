@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  // Import Material-UI components for building the chat interface
   Button,
   Container,
   CssBaseline,
@@ -18,16 +19,20 @@ import {
   useMediaQuery,
   useTheme,
 } from "@material-ui/core";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import { Brightness4, Brightness7 } from "@material-ui/icons";
 
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles"; // Import styling functions from Material-UI
+import { Brightness4, Brightness7 } from "@material-ui/icons"; // Import Material-UI icons for visual elements
+
+// Interface to type theme props
 interface ThemeProps {
-  darkMode: boolean;
-  isMobile: boolean;
+  darkMode: boolean; // Indicates if dark mode is enabled
+  isMobile: boolean; // Indicates if the screen size is mobile
 }
 
+// Styles for the ChatClient component
 const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
   createStyles({
+    // root styles (container for the entire chat client)
     root: {
       position: "absolute",
       width: "100%",
@@ -38,14 +43,16 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
       backgroundColor: (props) => (props.darkMode ? "#1a1a1a" : "#a1c4fd"),
       transition: "background-color 0.7s ease",
     },
+
+    // container styles (main content area of the chat client)
     container: {
-      height: "90%",
+      height: "90%", // Take up 90% of the parent height
       borderRadius: theme.shape.borderRadius,
       boxShadow: theme.shadows[5],
       backgroundColor: (props) => (props.darkMode ? "#2c2c2c" : "#ffffff"),
       padding: theme.spacing(3),
-      transition: "background-color 0.5s ease, color 0.5s ease",
-      width: (props) => (props.isMobile ? "100%" : "80%"),
+      transition: "background-color 0.5s ease, color 0.5s ease", // Smooth transitions for background and color
+      width: (props) => (props.isMobile ? "100%" : "80%"), // Width based on screen size
     },
     sidebar: {
       backgroundColor: (props) => (props.darkMode ? "#3c3c3c" : "#a1c4fd"),
@@ -267,69 +274,76 @@ const useStyles = makeStyles<Theme, ThemeProps>((theme) =>
   })
 );
 
+// Interface defining props passed to the ChatClient component
 interface Props {
-  isConnected: boolean;
-  members: string[];
-  chatRows: React.ReactNode[];
-  message: string;
-  onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onMessageKeyPress: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  onPublicMessage: () => void;
-  onPrivateMessage: (to: string) => void;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  showNameInput: boolean;
-  name: string;
-  onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onNameSubmit: () => void;
-  loading: boolean;
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-  isMobile: boolean;
-  onSendFile: (file: File) => void; // Add the onSendFile property
+  isConnected: boolean; // Indicates whether the client is connected to the chat server
+  members: string[]; // Array of member names in the chat room
+  chatRows: React.ReactNode[]; // Array of chat messages (React elements)
+  message: string; // Current message being typed by the user
+  onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void; // Event handler for message input changes
+  onMessageKeyPress: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void; // Event handler for key presses in the message input
+  onPublicMessage: () => void; // Function to handle sending a public message
+  onPrivateMessage: (to: string) => void; // Function to handle sending a private message
+  onConnect: () => void; // Function to handle connecting to the chat server
+  onDisconnect: () => void; // Function to handle disconnecting from the chat server
+  showNameInput: boolean; // Flag indicating whether to show the name input dialog
+  name: string; // The user's name
+  onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void; // Event handler for name input changes
+  onNameSubmit: () => void; // Function to handle submitting the user's name
+  loading: boolean; // Flag indicating whether the connection is loading
+  darkMode: boolean; // Flag indicating whether dark mode is enabled
+  toggleDarkMode: () => void; // Function to toggle dark mode
+  isMobile: boolean; // Flag indicating whether the device is a mobile device
+  onSendFile: (file: File) => void; // Function to handle sending a file
 }
 
+// Main ChatClient component
 const ChatClient: React.FC<Props> = (props) => {
   const classes = useStyles(props);
   const [privateMessageAnchorEl, setPrivateMessageAnchorEl] =
     useState<null | HTMLElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  // Function to handle connecting to the chat server
   const handleConnect = () => {
     props.onConnect();
   };
 
+  // Function to handle disconnecting from the chat server
   const handleDisconnect = () => {
     props.onDisconnect();
   };
 
+  // Function to handle clicking the private message button
   const handlePrivateMessageClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
     setPrivateMessageAnchorEl(event.currentTarget);
   };
 
+  // Function to handle closing the private message menu
   const handlePrivateMessageClose = (member: string | null) => {
     setPrivateMessageAnchorEl(null);
     if (member) {
-      props.onPrivateMessage(member);
+      props.onPrivateMessage(member); // Trigger the private message function if a member is selected
     }
   };
 
+  // Function to handle file selection changes in the input field
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
-      props.onSendFile(event.target.files[0]); // Send file immediately after selection
+      setSelectedFile(event.target.files[0]); // Update the selected file in state
+      props.onSendFile(event.target.files[0]); // Trigger the file send function in the parent component
     }
   };
-
+  // Function to handle sending the selected file
   const handleSendFile = () => {
     if (selectedFile) {
       props.onSendFile(selectedFile);
       setSelectedFile(null);
     }
   };
-
+  
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -353,7 +367,7 @@ const ChatClient: React.FC<Props> = (props) => {
           </Grid>
           <Grid item container direction="column" xs={12} sm={9}>
             <Paper className={classes.chatArea}>
-              <Grid container direction="column" style={{ height: "750px" }}> 
+              <Grid container direction="column" style={{ height: "750px" }}>
                 <Grid item style={{ flex: 1, overflowY: "auto" }}>
                   <ul className={classes.list}>
                     {props.chatRows.map((item, i) => (
